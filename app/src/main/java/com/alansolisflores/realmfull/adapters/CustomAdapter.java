@@ -63,11 +63,14 @@ public class CustomAdapter extends BaseAdapter {
 
         String name = this.realmResults.get(position).getName();
         String id = Integer.toString(this.realmResults.get(position).getId());
-        String dog = this.realmResults.get(position).getDogRealmList().first().getName();
+
+        if(this.realmResults.get(position).getDogRealmList().size() > 0){
+            String dog = this.realmResults.get(position).getDogRealmList().first().getName();
+            holder.dogTextView.setText(dog);
+        }
 
         holder.descriptionTextView.setText(name);
         holder.titleTextView.setText(id);
-        holder.dogTextView.setText(dog);
 
         return convertView;
     }

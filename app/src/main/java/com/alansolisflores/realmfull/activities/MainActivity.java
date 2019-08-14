@@ -1,11 +1,18 @@
 package com.alansolisflores.realmfull.activities;
 
+import android.content.DialogInterface;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.alansolisflores.realmfull.R;
 import com.alansolisflores.realmfull.adapters.CustomAdapter;
@@ -19,7 +26,7 @@ import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 
-public class MainActivity extends AppCompatActivity implements RealmChangeListener {
+public class MainActivity extends AppCompatActivity implements RealmChangeListener, View.OnClickListener {
 
     private Realm realm;
 
@@ -29,12 +36,17 @@ public class MainActivity extends AppCompatActivity implements RealmChangeListen
 
     private ListView personListView;
 
+    private FloatingActionButton fabAddPersons;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         this.personListView = findViewById(R.id.personListView);
+        this.fabAddPersons = findViewById(R.id.fabAddPersons);
+
+        this.fabAddPersons.setOnClickListener(this);
 
         Realm.init(this);
 
@@ -61,9 +73,6 @@ public class MainActivity extends AppCompatActivity implements RealmChangeListen
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()){
-            case R.id.addItem:
-                this.addPeople();
-                return true;
             case R.id.deleteItem:
                 this.deleteAllPeople();
                 return true;
@@ -119,5 +128,35 @@ public class MainActivity extends AppCompatActivity implements RealmChangeListen
     @Override
     public void onChange(Object o) {
         this.customAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onClick(View v) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter name, please");
+
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_layout,null);
+        builder.setView(view);
+
+        final EditText editText = view.findViewById(R.id.nameEditText);
+        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String name = editText.getText().toString().trim();
+
+                if(!name.isEmpty()){
+                    Person person = new Person(name);
+
+                    realm.beginTransaction();
+                    realm.copyToRealmOrUpdate(person);
+                    realm.commitTransaction();
+                }else{
+                    Toast.makeText(MainActivity.this,"Enter name, please", Toast.LENGTH_SHORT)
+                            .show();
+                }
+            }
+        });
+
+        builder.show();
     }
 }
